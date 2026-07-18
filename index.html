@@ -336,9 +336,17 @@
             <b>🏺 문화 시대 퀴즈</b>
             <span class="muted">문화유산의 시대 맞히기</span>
           </button>
+          <button class="mode-card" onclick="quickStart('war')">
+            <b>⚔️ 전쟁 사실 퀴즈</b>
+            <span class="muted">사실을 보고 전쟁 맞히기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('organization')">
+            <b>🏛️ 정치 조직 퀴즈</b>
+            <span class="muted">맡은 일을 보고 조직 맞히기</span>
+          </button>
           <button class="mode-card" onclick="quickStart('all')">
             <b>🎲 전체 랜덤</b>
-            <span class="muted">왕 재위 시기·문화 문제 섞어 풀기</span>
+            <span class="muted">왕·문화·전쟁·정치 조직 섞어 풀기</span>
           </button>
           <button class="mode-card" onclick="quickStart('wrong')">
             <b>📝 오답 다시 풀기</b>
@@ -351,7 +359,7 @@
     <div class="card">
       <h2>사용 방법</h2>
       <div class="muted">
-        1. 입력 탭에서 왕의 재위 시기에 있었던 일 또는 문화 자료를 저장해요.<br>
+        1. 입력 탭에서 왕·문화·전쟁·정치 조직 자료를 저장해요.<br>
         2. 퀴즈 탭에서 문제 유형과 문제 수를 골라요.<br>
         3. 틀린 자료는 자동으로 오답 목록에 쌓여요.<br>
         4. 자료는 이 기기의 브라우저에 저장돼요.
@@ -366,6 +374,8 @@
       <select id="entryType" onchange="toggleEntryForm()">
         <option value="king">왕 재위 시기</option>
         <option value="culture">문화 파트</option>
+        <option value="war">전쟁</option>
+        <option value="organization">정치 조직</option>
       </select>
 
       <div id="commonFields">
@@ -420,6 +430,42 @@
         <textarea id="cultureMemo" placeholder="예: 현재 해인사 장경판전에 보관"></textarea>
       </div>
 
+      <div id="warFields" class="hidden">
+        <label>전쟁 이름</label>
+        <input id="warName" placeholder="예: 임진왜란" />
+        <div class="row">
+          <div>
+            <label>국가·세력</label>
+            <input id="warCountry" placeholder="예: 조선·일본" />
+          </div>
+          <div>
+            <label>발생 연도</label>
+            <input id="warYear" placeholder="예: 1592년" />
+          </div>
+        </div>
+        <label>전쟁에서 있었던 사실</label>
+        <textarea id="warFact" placeholder="예: 이순신이 한산도 대첩에서 승리하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="warMemo" placeholder="예: 선조 재위 시기, 일본의 침략"></textarea>
+      </div>
+
+      <div id="organizationFields" class="hidden">
+        <div class="row">
+          <div>
+            <label>국가·왕조</label>
+            <input id="orgCountry" placeholder="예: 조선" />
+          </div>
+          <div>
+            <label>정치 조직 이름</label>
+            <input id="orgName" placeholder="예: 의정부" />
+          </div>
+        </div>
+        <label>맡은 일·기능</label>
+        <textarea id="orgDuty" placeholder="예: 국정을 총괄하고 중요한 정책을 심의하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="orgMemo" placeholder="예: 영의정·좌의정·우의정으로 구성"></textarea>
+      </div>
+
       <button id="saveBtn" class="btn primary full" onclick="saveEntry()">저장하기</button>
       <button id="cancelEditBtn" class="btn ghost full hidden" onclick="cancelEdit()">수정 취소</button>
     </div>
@@ -433,8 +479,10 @@
           <option value="all">전체 유형</option>
           <option value="king">왕 재위 시기</option>
           <option value="culture">문화 파트</option>
+          <option value="war">전쟁</option>
+          <option value="organization">정치 조직</option>
         </select>
-        <input id="searchText" placeholder="왕·재위 시기 사건·문화 검색" oninput="renderEntries()" />
+        <input id="searchText" placeholder="왕·문화·전쟁·정치 조직 검색" oninput="renderEntries()" />
       </div>
       <div id="entryList"></div>
     </div>
@@ -460,6 +508,8 @@
         <option value="all">전체 랜덤</option>
         <option value="king">왕 재위 시기</option>
         <option value="culture">문화 시대</option>
+        <option value="war">전쟁 사실</option>
+        <option value="organization">정치 조직</option>
         <option value="wrong">오답 다시 풀기</option>
       </select>
 
@@ -571,6 +621,8 @@
     const type = document.getElementById('entryType').value;
     document.getElementById('kingFields').classList.toggle('hidden',type!=='king');
     document.getElementById('cultureFields').classList.toggle('hidden',type!=='culture');
+    document.getElementById('warFields').classList.toggle('hidden',type!=='war');
+    document.getElementById('organizationFields').classList.toggle('hidden',type!=='organization');
   }
 
   function saveEntry(){
@@ -583,26 +635,31 @@
       const name = document.getElementById('kingName').value.trim();
       const achievement = document.getElementById('achievement').value.trim();
       const memo = document.getElementById('kingMemo').value.trim();
-
-      if(!name || !achievement){
-        showToast('왕 이름과 재위 시기에 있었던 일을 입력해 주세요.');
-        return;
-      }
-
+      if(!name || !achievement){ showToast('왕 이름과 재위 시기에 있었던 일을 입력해 주세요.'); return; }
       item = {id:editingId || Date.now(), type, era, country, name, achievement, memo, wrongCount:0};
-    }else{
+    }else if(type==='culture'){
       const name = document.getElementById('cultureName').value.trim();
       const country = document.getElementById('cultureCountry').value.trim();
       const person = document.getElementById('culturePerson').value.trim();
       const description = document.getElementById('cultureDesc').value.trim();
       const memo = document.getElementById('cultureMemo').value.trim();
-
-      if(!name){
-        showToast('문화유산·문화 요소 이름을 입력해 주세요.');
-        return;
-      }
-
+      if(!name){ showToast('문화유산·문화 요소 이름을 입력해 주세요.'); return; }
       item = {id:editingId || Date.now(), type, era, name, country, person, description, memo, wrongCount:0};
+    }else if(type==='war'){
+      const name = document.getElementById('warName').value.trim();
+      const country = document.getElementById('warCountry').value.trim();
+      const year = document.getElementById('warYear').value.trim();
+      const fact = document.getElementById('warFact').value.trim();
+      const memo = document.getElementById('warMemo').value.trim();
+      if(!name || !fact){ showToast('전쟁 이름과 전쟁에서 있었던 사실을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, name, country, year, fact, memo, wrongCount:0};
+    }else{
+      const country = document.getElementById('orgCountry').value.trim();
+      const name = document.getElementById('orgName').value.trim();
+      const duty = document.getElementById('orgDuty').value.trim();
+      const memo = document.getElementById('orgMemo').value.trim();
+      if(!country || !name || !duty){ showToast('국가·왕조, 정치 조직 이름, 맡은 일을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, country, name, duty, memo, wrongCount:0};
     }
 
     if(editingId){
@@ -615,7 +672,7 @@
         e.type===item.type &&
         e.era===item.era &&
         e.name===item.name &&
-        (item.type==='king' ? e.achievement===item.achievement : true)
+        (item.type==='king' ? e.achievement===item.achievement : item.type==='war' ? e.fact===item.fact : item.type==='organization' ? e.duty===item.duty : true)
       );
       if(duplicate && !confirm('비슷한 자료가 이미 있어요. 그래도 저장할까요?')) return;
       entries.unshift(item);
@@ -631,7 +688,7 @@
     editingId = null;
     document.getElementById('saveBtn').textContent='저장하기';
     document.getElementById('cancelEditBtn').classList.add('hidden');
-    ['kingCountry','kingName','achievement','kingMemo','cultureName','cultureCountry','culturePerson','cultureDesc','cultureMemo']
+    ['kingCountry','kingName','achievement','kingMemo','cultureName','cultureCountry','culturePerson','cultureDesc','cultureMemo','warName','warCountry','warYear','warFact','warMemo','orgCountry','orgName','orgDuty','orgMemo']
       .forEach(id=>document.getElementById(id).value='');
   }
 
@@ -657,16 +714,23 @@
     }
 
     list.innerHTML = filtered.map(e=>{
-      const title = e.type==='king' ? `${escapeHtml(e.name)} — ${escapeHtml(e.achievement)}` : escapeHtml(e.name);
+      const title = e.type==='king' ? `${escapeHtml(e.name)} — ${escapeHtml(e.achievement)}`
+        : e.type==='war' ? `${escapeHtml(e.name)} — ${escapeHtml(e.fact)}`
+        : e.type==='organization' ? `${escapeHtml(e.name)} — ${escapeHtml(e.duty)}`
+        : escapeHtml(e.name);
       const detail = e.type==='king'
         ? `${escapeHtml(e.country || '')}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
-        : `${escapeHtml(e.description || '')}${e.person ? '<br>관련 인물: '+escapeHtml(e.person) : ''}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`;
+        : e.type==='culture'
+          ? `${escapeHtml(e.description || '')}${e.person ? '<br>관련 인물: '+escapeHtml(e.person) : ''}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
+          : e.type==='war'
+            ? `${escapeHtml(e.country || '')}${e.year ? ' · '+escapeHtml(e.year) : ''}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
+            : `${escapeHtml(e.country || '')}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`;
 
       return `
       <div class="entry">
         <div class="entry-head">
           <div>
-            <span class="badge">${e.type==='king'?'왕 재위 시기':'문화'}</span>
+            <span class="badge">${e.type==='king'?'왕 재위 시기':e.type==='culture'?'문화':e.type==='war'?'전쟁':'정치 조직'}</span>
             <span class="badge">${escapeHtml(e.era)}</span>
             ${e.wrongCount ? `<span class="badge">오답 ${e.wrongCount}회</span>` : ''}
             <div class="entry-title">${title}</div>
@@ -695,12 +759,23 @@
       document.getElementById('kingName').value=e.name||'';
       document.getElementById('achievement').value=e.achievement||'';
       document.getElementById('kingMemo').value=e.memo||'';
-    }else{
+    }else if(e.type==='culture'){
       document.getElementById('cultureName').value=e.name||'';
       document.getElementById('cultureCountry').value=e.country||'';
       document.getElementById('culturePerson').value=e.person||'';
       document.getElementById('cultureDesc').value=e.description||'';
       document.getElementById('cultureMemo').value=e.memo||'';
+    }else if(e.type==='war'){
+      document.getElementById('warName').value=e.name||'';
+      document.getElementById('warCountry').value=e.country||'';
+      document.getElementById('warYear').value=e.year||'';
+      document.getElementById('warFact').value=e.fact||'';
+      document.getElementById('warMemo').value=e.memo||'';
+    }else{
+      document.getElementById('orgCountry').value=e.country||'';
+      document.getElementById('orgName').value=e.name||'';
+      document.getElementById('orgDuty').value=e.duty||'';
+      document.getElementById('orgMemo').value=e.memo||'';
     }
 
     document.getElementById('saveBtn').textContent='수정 완료';
@@ -730,6 +805,8 @@
     let pool=entries.filter(e=>era==='all'||e.era===era);
     if(mode==='king') pool=pool.filter(e=>e.type==='king');
     if(mode==='culture') pool=pool.filter(e=>e.type==='culture');
+    if(mode==='war') pool=pool.filter(e=>e.type==='war');
+    if(mode==='organization') pool=pool.filter(e=>e.type==='organization');
     if(mode==='wrong') pool=pool.filter(e=>(e.wrongCount||0)>0);
 
     if(!pool.length){
@@ -771,6 +848,50 @@
         kind:'왕 재위 시기',
         era:entry.era,
         question:`다음 일이 있었던 시기의 왕은 누구일까요?\n“${entry.achievement}”`,
+        answer:entry.name,
+        choices:shuffle(choices),
+        explanation:[entry.country,entry.memo].filter(Boolean).join(' · ')
+      };
+    }
+
+    if(entry.type==='war'){
+      const candidates=[...new Set(entries.filter(e=>e.type==='war' && e.id!==entry.id).map(e=>e.name).filter(Boolean))];
+      const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
+      const choices=shuffle([entry.name,...wrong]);
+      while(choices.length<4){
+        const fallback=['고구려-수 전쟁','고구려-당 전쟁','귀주 대첩','몽골 침입','임진왜란','병자호란','청산리 대첩']
+          .find(x=>!choices.includes(x));
+        if(!fallback) break;
+        choices.push(fallback);
+      }
+      return {
+        entryId:entry.id,
+        kind:'전쟁 사실',
+        era:entry.era,
+        question:`다음 사실과 관련된 전쟁은 무엇일까요?
+“${entry.fact}”`,
+        answer:entry.name,
+        choices:shuffle(choices),
+        explanation:[entry.country,entry.year,entry.memo].filter(Boolean).join(' · ')
+      };
+    }
+
+    if(entry.type==='organization'){
+      const candidates=[...new Set(entries.filter(e=>e.type==='organization' && e.id!==entry.id).map(e=>e.name).filter(Boolean))];
+      const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
+      const choices=shuffle([entry.name,...wrong]);
+      while(choices.length<4){
+        const fallback=['의정부','6조','삼사','승정원','의금부','도병마사','식목도감','중추원']
+          .find(x=>!choices.includes(x));
+        if(!fallback) break;
+        choices.push(fallback);
+      }
+      return {
+        entryId:entry.id,
+        kind:'정치 조직',
+        era:entry.era,
+        question:`다음 일을 맡은 정치 조직은 무엇일까요?
+“${entry.duty}”`,
         answer:entry.name,
         choices:shuffle(choices),
         explanation:[entry.country,entry.memo].filter(Boolean).join(' · ')
