@@ -1,0 +1,1122 @@
+
+<!-- v2 schema: 대외 관계 카테고리(전쟁/외교/조약/대외정책/교류) 추가 예정. 기존 localStorage 유지 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f5efe4" />
+  <title>한국사 셀프 퀴즈</title>
+  <style>
+    :root{
+      --bg:#f6f1e8;
+      --card:#fffdf8;
+      --ink:#2d2924;
+      --sub:#71695f;
+      --line:#ded3c4;
+      --accent:#6c4d3f;
+      --accent2:#b78a64;
+      --good:#2d7a4f;
+      --bad:#b0473f;
+      --shadow:0 10px 28px rgba(70,48,35,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+      background:linear-gradient(180deg,#f6f1e8 0%,#efe6d9 100%);
+      color:var(--ink);
+      min-height:100vh;
+    }
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{
+      width:min(760px,100%);
+      margin:0 auto;
+      padding:calc(18px + env(safe-area-inset-top)) 14px calc(110px + env(safe-area-inset-bottom));
+    }
+    header{
+      padding:10px 4px 18px;
+    }
+    h1{
+      margin:0;
+      font-size:29px;
+      letter-spacing:-1.2px;
+    }
+    .subtitle{margin-top:8px;color:var(--sub);font-size:14px;line-height:1.55}
+    .top-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-top:16px;
+    }
+    .stat{
+      background:rgba(255,253,248,.86);
+      border:1px solid rgba(222,211,196,.85);
+      border-radius:15px;
+      padding:12px;
+      text-align:center;
+      box-shadow:0 4px 14px rgba(70,48,35,.05);
+    }
+    .stat b{display:block;font-size:20px}
+    .stat span{font-size:12px;color:var(--sub)}
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:7px;
+      position:sticky;
+      top:0;
+      z-index:20;
+      padding:10px 0;
+      backdrop-filter:blur(12px);
+      background:rgba(246,241,232,.88);
+    }
+    .tab{
+      border:1px solid var(--line);
+      background:var(--card);
+      border-radius:13px;
+      padding:11px 5px;
+      color:var(--sub);
+      font-weight:700;
+      font-size:13px;
+    }
+    .tab.active{
+      background:var(--accent);
+      color:white;
+      border-color:var(--accent);
+    }
+    .panel{display:none}
+    .panel.active{display:block}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    h2{font-size:20px;margin:0 0 14px}
+    h3{font-size:16px;margin:0 0 10px}
+    label{
+      display:block;
+      margin:12px 0 6px;
+      font-weight:700;
+      font-size:14px;
+    }
+    input,select,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:13px 12px;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+    textarea{min-height:95px;resize:vertical}
+    input:focus,select:focus,textarea:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(183,138,100,.15)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+    }
+    .btn.primary{background:var(--accent);color:#fff}
+    .btn.secondary{background:#eee4d7;color:var(--ink)}
+    .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+    .btn.danger{background:#f9e6e4;color:var(--bad)}
+    .btn.good{background:#e4f2ea;color:var(--good)}
+    .btn.full{width:100%;margin-top:14px}
+    .muted{color:var(--sub);font-size:13px;line-height:1.55}
+    .entry{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      margin-top:10px;
+      background:#fff;
+    }
+    .entry-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .badge{
+      display:inline-block;
+      border-radius:999px;
+      background:#eee4d7;
+      color:var(--accent);
+      padding:5px 9px;
+      font-size:11px;
+      font-weight:800;
+      margin-right:5px;
+      margin-bottom:5px;
+    }
+    .entry-title{font-weight:900;font-size:16px;margin-top:4px}
+    .entry-text{margin-top:8px;line-height:1.55}
+    .mini-actions{display:flex;gap:6px}
+    .mini-actions button{
+      border:1px solid var(--line);
+      border-radius:9px;
+      background:#fff;
+      padding:7px 9px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .filterbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+    .quiz-setup .option-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .mode-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background:#fff;
+      text-align:left;
+    }
+    .mode-card.active{
+      border:2px solid var(--accent);
+      background:#fbf5ec;
+    }
+    .mode-card b{display:block;margin-bottom:5px}
+    .quiz-box{display:none}
+    .quiz-box.active{display:block}
+    .quiz-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .progress{
+      height:8px;
+      background:#eee5d9;
+      border-radius:999px;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+    .progress > div{
+      height:100%;
+      background:var(--accent2);
+      width:0%;
+      transition:.2s;
+    }
+    .question{
+      font-weight:900;
+      font-size:22px;
+      line-height:1.48;
+      margin:12px 0 18px;
+    }
+    .choices{display:grid;gap:10px}
+    .choice{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:14px 15px;
+      line-height:1.45;
+      font-weight:700;
+    }
+    .choice.selected{border:2px solid var(--accent2);background:#fbf4eb}
+    .choice.correct{border-color:var(--good);background:#e8f5ed;color:var(--good)}
+    .choice.wrong{border-color:var(--bad);background:#fbe8e6;color:var(--bad)}
+    .feedback{
+      display:none;
+      border-radius:13px;
+      padding:13px;
+      margin-top:14px;
+      line-height:1.55;
+      font-size:14px;
+    }
+    .feedback.show{display:block}
+    .feedback.good{background:#e8f5ed;color:var(--good)}
+    .feedback.bad{background:#fbe8e6;color:var(--bad)}
+    .quiz-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:8px;
+      margin-top:14px;
+    }
+    .result{
+      display:none;
+      text-align:center;
+      padding:12px 0;
+    }
+    .result.active{display:block}
+    .score{
+      font-size:45px;
+      font-weight:900;
+      color:var(--accent);
+      margin:8px 0;
+    }
+    .empty{
+      text-align:center;
+      color:var(--sub);
+      padding:24px 10px;
+      line-height:1.6;
+    }
+    .bottom-nav{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      z-index:30;
+      background:rgba(255,253,248,.95);
+      backdrop-filter:blur(14px);
+      border-top:1px solid var(--line);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    }
+    .bottom-inner{
+      width:min(760px,100%);
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:7px;
+    }
+    .bottom-btn{
+      border:none;background:transparent;
+      padding:8px 3px;
+      color:var(--sub);
+      font-size:12px;
+      font-weight:800;
+    }
+    .bottom-btn.active{color:var(--accent)}
+    .bottom-btn span{display:block;font-size:21px;margin-bottom:2px}
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:95px;
+      transform:translateX(-50%) translateY(20px);
+      background:#2f2a26;
+      color:white;
+      padding:11px 16px;
+      border-radius:999px;
+      opacity:0;
+      pointer-events:none;
+      transition:.2s;
+      z-index:60;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .hidden{display:none!important}
+    @media (max-width:520px){
+      .row,.filterbar{grid-template-columns:1fr}
+      .question{font-size:20px}
+      .quiz-actions{grid-template-columns:1fr 1fr}
+      .quiz-actions .wide{grid-column:1/-1}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>한국사 셀프 퀴즈</h1>
+    <div class="subtitle">왕의 재위 시기에 있었던 일과 문화사를 직접 입력하고, 내가 만든 문제로 반복 학습해요.</div>
+    <div class="top-stats">
+      <div class="stat"><b id="statTotal">0</b><span>저장 자료</span></div>
+      <div class="stat"><b id="statWrong">0</b><span>오답 자료</span></div>
+      <div class="stat"><b id="statRate">0%</b><span>누적 정답률</span></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="home">홈</button>
+    <button class="tab" data-tab="add">입력</button>
+    <button class="tab" data-tab="list">자료</button>
+    <button class="tab" data-tab="quiz">퀴즈</button>
+  </div>
+
+  <section id="home" class="panel active">
+    <div class="card">
+      <h2>오늘 뭐 공부할까?</h2>
+      <div class="quiz-setup">
+        <div class="option-grid">
+          <button class="mode-card" onclick="quickStart('king')">
+            <b>👑 왕 재위 시기 퀴즈</b>
+            <span class="muted">재위 시기의 일을 보고 왕 맞히기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('culture')">
+            <b>🏺 문화 시대 퀴즈</b>
+            <span class="muted">문화유산의 시대 맞히기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('war')">
+            <b>⚔️ 대외 관계 사실 퀴즈</b>
+            <span class="muted">사실을 보고 대외 관계 맞히기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('organization')">
+            <b>🏛️ 정치 조직 퀴즈</b>
+            <span class="muted">맡은 일을 보고 조직 맞히기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('all')">
+            <b>🎲 전체 랜덤</b>
+            <span class="muted">왕·문화·대외 관계·정치 조직 섞어 풀기</span>
+          </button>
+          <button class="mode-card" onclick="quickStart('wrong')">
+            <b>📝 오답 다시 풀기</b>
+            <span class="muted">틀린 문제만 복습하기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>사용 방법</h2>
+      <div class="muted">
+        1. 입력 탭에서 왕·문화·대외 관계·정치 조직 자료를 저장해요.<br>
+        2. 퀴즈 탭에서 문제 유형과 문제 수를 골라요.<br>
+        3. 틀린 자료는 자동으로 오답 목록에 쌓여요.<br>
+        4. 자료는 이 기기의 브라우저에 저장돼요.
+      </div>
+    </div>
+  </section>
+
+  <section id="add" class="panel">
+    <div class="card">
+      <h2>자료 입력</h2>
+      <label>자료 유형</label>
+      <select id="entryType" onchange="toggleEntryForm()">
+        <option value="king">왕 재위 시기</option>
+        <option value="culture">문화 파트</option>
+        <option value="war">대외 관계</option>
+        <option value="organization">정치 조직</option>
+      </select>
+
+      <div id="commonFields">
+        <label>시대 구분</label>
+        <select id="era">
+          <option>선사 시대</option>
+          <option>고조선과 여러 나라</option>
+          <option>삼국 시대</option>
+          <option>남북국 시대</option>
+          <option>고려</option>
+          <option>조선 전기</option>
+          <option>조선 후기</option>
+          <option>개항기</option>
+          <option>일제 강점기</option>
+          <option>현대</option>
+        </select>
+      </div>
+
+      <div id="kingFields">
+        <div class="row">
+          <div>
+            <label>국가·왕조</label>
+            <input id="kingCountry" placeholder="예: 고려" />
+          </div>
+          <div>
+            <label>왕 이름</label>
+            <input id="kingName" placeholder="예: 광종" />
+          </div>
+        </div>
+        <label>재위 시기에 있었던 일</label>
+        <textarea id="achievement" placeholder="예: 노비안검법을 실시하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="kingMemo" placeholder="예: 왕권 강화와 호족 세력 약화 목적"></textarea>
+      </div>
+
+      <div id="cultureFields" class="hidden">
+        <label>문화유산·문화 요소</label>
+        <input id="cultureName" placeholder="예: 팔만대장경" />
+        <div class="row">
+          <div>
+            <label>국가·왕조</label>
+            <input id="cultureCountry" placeholder="예: 고려" />
+          </div>
+          <div>
+            <label>관련 인물·왕</label>
+            <input id="culturePerson" placeholder="선택 입력" />
+          </div>
+        </div>
+        <label>특징·설명</label>
+        <textarea id="cultureDesc" placeholder="예: 몽골 침입을 불교의 힘으로 물리치기 위해 제작하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="cultureMemo" placeholder="예: 현재 해인사 장경판전에 보관"></textarea>
+      </div>
+
+      <div id="warFields" class="hidden">
+        <label>대외 관계 이름</label>
+        <input id="warName" placeholder="예: 임진왜란" />
+        <div class="row">
+          <div>
+            <label>국가·세력</label>
+            <input id="warCountry" placeholder="예: 조선·일본" />
+          </div>
+          <div>
+            <label>발생 연도</label>
+            <input id="warYear" placeholder="예: 1592년" />
+          </div>
+        </div>
+        <label>대외 관계에서 있었던 사실</label>
+        <textarea id="warFact" placeholder="예: 이순신이 한산도 대첩에서 승리하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="warMemo" placeholder="예: 선조 재위 시기, 일본의 침략"></textarea>
+      </div>
+
+      <div id="organizationFields" class="hidden">
+        <div class="row">
+          <div>
+            <label>국가·왕조</label>
+            <input id="orgCountry" placeholder="예: 조선" />
+          </div>
+          <div>
+            <label>정치 조직 이름</label>
+            <input id="orgName" placeholder="예: 의정부" />
+          </div>
+        </div>
+        <label>맡은 일·기능</label>
+        <textarea id="orgDuty" placeholder="예: 국정을 총괄하고 중요한 정책을 심의하였다."></textarea>
+        <label>해설·암기 메모</label>
+        <textarea id="orgMemo" placeholder="예: 영의정·좌의정·우의정으로 구성"></textarea>
+      </div>
+
+      <button id="saveBtn" class="btn primary full" onclick="saveEntry()">저장하기</button>
+      <button id="cancelEditBtn" class="btn ghost full hidden" onclick="cancelEdit()">수정 취소</button>
+    </div>
+  </section>
+
+  <section id="list" class="panel">
+    <div class="card">
+      <h2>저장한 자료</h2>
+      <div class="filterbar">
+        <select id="listTypeFilter" onchange="renderEntries()">
+          <option value="all">전체 유형</option>
+          <option value="king">왕 재위 시기</option>
+          <option value="culture">문화 파트</option>
+          <option value="war">대외 관계</option>
+          <option value="organization">정치 조직</option>
+        </select>
+        <input id="searchText" placeholder="왕·문화·대외 관계·정치 조직 검색" oninput="renderEntries()" />
+      </div>
+      <div id="entryList"></div>
+    </div>
+
+    <div class="card">
+      <h2>백업</h2>
+      <div class="muted">기기를 바꾸거나 브라우저 데이터를 삭제하면 자료가 사라질 수 있으니 가끔 백업해 두세요.</div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn secondary" onclick="exportData()">자료 내보내기</button>
+        <button class="btn ghost" onclick="document.getElementById('importFile').click()">자료 가져오기</button>
+      </div>
+      <input id="importFile" type="file" accept=".json,application/json" class="hidden" onchange="importData(event)" />
+      <button class="btn danger full" onclick="resetAll()">전체 자료 삭제</button>
+    </div>
+  </section>
+
+  <section id="quiz" class="panel">
+    <div id="quizSetup" class="card">
+      <h2>퀴즈 설정</h2>
+
+      <label>문제 유형</label>
+      <select id="quizMode">
+        <option value="all">전체 랜덤</option>
+        <option value="king">왕 재위 시기</option>
+        <option value="culture">문화 시대</option>
+        <option value="war">대외 관계 사실</option>
+        <option value="organization">정치 조직</option>
+        <option value="wrong">오답 다시 풀기</option>
+      </select>
+
+      <label>시대 범위</label>
+      <select id="quizEra">
+        <option value="all">전체 시대</option>
+        <option>선사 시대</option>
+        <option>고조선과 여러 나라</option>
+        <option>삼국 시대</option>
+        <option>남북국 시대</option>
+        <option>고려</option>
+        <option>조선 전기</option>
+        <option>조선 후기</option>
+        <option>개항기</option>
+        <option>일제 강점기</option>
+        <option>현대</option>
+      </select>
+
+      <label>문제 수</label>
+      <select id="quizCount">
+        <option value="10">10문제</option>
+        <option value="20">20문제</option>
+        <option value="all">전체</option>
+      </select>
+
+      <button class="btn primary full" onclick="startQuiz()">퀴즈 시작</button>
+    </div>
+
+    <div id="quizBox" class="card quiz-box">
+      <div class="quiz-top">
+        <b id="quizCounter">1 / 10</b>
+        <span class="badge" id="quizKind">왕 재위 시기</span>
+      </div>
+      <div class="progress"><div id="progressBar"></div></div>
+      <div id="quizEraBadge" class="badge"></div>
+      <div id="question" class="question"></div>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" class="feedback"></div>
+
+      <div class="quiz-actions">
+        <button class="btn ghost" onclick="prevQuestion()">이전</button>
+        <button id="checkBtn" class="btn primary" onclick="checkAnswer()">확인</button>
+        <button id="nextBtn" class="btn secondary" onclick="nextQuestion()">다음</button>
+        <button class="btn ghost wide" onclick="skipQuestion()">패스</button>
+      </div>
+    </div>
+
+    <div id="resultBox" class="card result">
+      <h2>퀴즈 결과</h2>
+      <div class="score" id="resultScore">0점</div>
+      <div id="resultText" class="muted"></div>
+      <button class="btn primary full" onclick="restartSame()">같은 조건으로 다시 풀기</button>
+      <button class="btn ghost full" onclick="backToSetup()">퀴즈 설정으로</button>
+    </div>
+  </section>
+</div>
+
+<div class="bottom-nav">
+  <div class="bottom-inner">
+    <button class="bottom-btn active" data-tab="home"><span>🏠</span>홈</button>
+    <button class="bottom-btn" data-tab="add"><span>✍️</span>입력</button>
+    <button class="bottom-btn" data-tab="list"><span>📚</span>자료</button>
+    <button class="bottom-btn" data-tab="quiz"><span>🧩</span>퀴즈</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'koreanHistoryQuiz_v1';
+  const STATS_KEY = 'koreanHistoryQuiz_stats_v1';
+
+  let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  let stats = JSON.parse(localStorage.getItem(STATS_KEY) || '{"correct":0,"answered":0}');
+  let editingId = null;
+
+  let quizQuestions = [];
+  let currentIndex = 0;
+  let selectedChoice = null;
+  let lastQuizSettings = null;
+
+  function saveAll(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    updateStats();
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(()=>t.classList.remove('show'),1800);
+  }
+
+  function switchTab(tabName){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab,.bottom-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tabName));
+    document.getElementById(tabName).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+    if(tabName==='list') renderEntries();
+  }
+
+  document.querySelectorAll('.tab,.bottom-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+  });
+
+  function toggleEntryForm(){
+    const type = document.getElementById('entryType').value;
+    document.getElementById('kingFields').classList.toggle('hidden',type!=='king');
+    document.getElementById('cultureFields').classList.toggle('hidden',type!=='culture');
+    document.getElementById('warFields').classList.toggle('hidden',type!=='war');
+    document.getElementById('organizationFields').classList.toggle('hidden',type!=='organization');
+  }
+
+  function saveEntry(){
+    const type = document.getElementById('entryType').value;
+    const era = document.getElementById('era').value;
+    let item;
+
+    if(type==='king'){
+      const country = document.getElementById('kingCountry').value.trim();
+      const name = document.getElementById('kingName').value.trim();
+      const achievement = document.getElementById('achievement').value.trim();
+      const memo = document.getElementById('kingMemo').value.trim();
+      if(!name || !achievement){ showToast('왕 이름과 재위 시기에 있었던 일을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, country, name, achievement, memo, wrongCount:0};
+    }else if(type==='culture'){
+      const name = document.getElementById('cultureName').value.trim();
+      const country = document.getElementById('cultureCountry').value.trim();
+      const person = document.getElementById('culturePerson').value.trim();
+      const description = document.getElementById('cultureDesc').value.trim();
+      const memo = document.getElementById('cultureMemo').value.trim();
+      if(!name){ showToast('문화유산·문화 요소 이름을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, name, country, person, description, memo, wrongCount:0};
+    }else if(type==='war'){
+      const name = document.getElementById('warName').value.trim();
+      const country = document.getElementById('warCountry').value.trim();
+      const year = document.getElementById('warYear').value.trim();
+      const fact = document.getElementById('warFact').value.trim();
+      const memo = document.getElementById('warMemo').value.trim();
+      if(!name || !fact){ showToast('대외 관계 이름과 대외 관계에서 있었던 사실을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, name, country, year, fact, memo, wrongCount:0};
+    }else{
+      const country = document.getElementById('orgCountry').value.trim();
+      const name = document.getElementById('orgName').value.trim();
+      const duty = document.getElementById('orgDuty').value.trim();
+      const memo = document.getElementById('orgMemo').value.trim();
+      if(!country || !name || !duty){ showToast('국가·왕조, 정치 조직 이름, 맡은 일을 입력해 주세요.'); return; }
+      item = {id:editingId || Date.now(), type, era, country, name, duty, memo, wrongCount:0};
+    }
+
+    if(editingId){
+      const old = entries.find(e=>e.id===editingId);
+      item.wrongCount = old?.wrongCount || 0;
+      entries = entries.map(e=>e.id===editingId ? item : e);
+      showToast('수정했어요.');
+    }else{
+      const duplicate = entries.some(e =>
+        e.type===item.type &&
+        e.era===item.era &&
+        e.name===item.name &&
+        (item.type==='king' ? e.achievement===item.achievement : item.type==='war' ? e.fact===item.fact : item.type==='organization' ? e.duty===item.duty : true)
+      );
+      if(duplicate && !confirm('비슷한 자료가 이미 있어요. 그래도 저장할까요?')) return;
+      entries.unshift(item);
+      showToast('저장했어요.');
+    }
+
+    saveAll();
+    clearForm();
+    renderEntries();
+  }
+
+  function clearForm(){
+    editingId = null;
+    document.getElementById('saveBtn').textContent='저장하기';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
+    ['kingCountry','kingName','achievement','kingMemo','cultureName','cultureCountry','culturePerson','cultureDesc','cultureMemo','warName','warCountry','warYear','warFact','warMemo','orgCountry','orgName','orgDuty','orgMemo']
+      .forEach(id=>document.getElementById(id).value='');
+  }
+
+  function cancelEdit(){
+    clearForm();
+    showToast('수정을 취소했어요.');
+  }
+
+  function renderEntries(){
+    const list = document.getElementById('entryList');
+    const type = document.getElementById('listTypeFilter')?.value || 'all';
+    const search = (document.getElementById('searchText')?.value || '').trim().toLowerCase();
+
+    const filtered = entries.filter(e=>{
+      if(type!=='all' && e.type!==type) return false;
+      const text = JSON.stringify(e).toLowerCase();
+      return !search || text.includes(search);
+    });
+
+    if(!filtered.length){
+      list.innerHTML='<div class="empty">조건에 맞는 자료가 없어요.<br>입력 탭에서 자료를 추가해 주세요.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(e=>{
+      const title = e.type==='king' ? `${escapeHtml(e.name)} — ${escapeHtml(e.achievement)}`
+        : e.type==='war' ? `${escapeHtml(e.name)} — ${escapeHtml(e.fact)}`
+        : e.type==='organization' ? `${escapeHtml(e.name)} — ${escapeHtml(e.duty)}`
+        : escapeHtml(e.name);
+      const detail = e.type==='king'
+        ? `${escapeHtml(e.country || '')}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
+        : e.type==='culture'
+          ? `${escapeHtml(e.description || '')}${e.person ? '<br>관련 인물: '+escapeHtml(e.person) : ''}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
+          : e.type==='war'
+            ? `${escapeHtml(e.country || '')}${e.year ? ' · '+escapeHtml(e.year) : ''}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`
+            : `${escapeHtml(e.country || '')}${e.memo ? '<br>'+escapeHtml(e.memo) : ''}`;
+
+      return `
+      <div class="entry">
+        <div class="entry-head">
+          <div>
+            <span class="badge">${e.type==='king'?'왕 재위 시기':e.type==='culture'?'문화':e.type==='war'?'대외 관계':'정치 조직'}</span>
+            <span class="badge">${escapeHtml(e.era)}</span>
+            ${e.wrongCount ? `<span class="badge">오답 ${e.wrongCount}회</span>` : ''}
+            <div class="entry-title">${title}</div>
+          </div>
+          <div class="mini-actions">
+            <button onclick="editEntry(${e.id})">수정</button>
+            <button onclick="deleteEntry(${e.id})">삭제</button>
+          </div>
+        </div>
+        <div class="entry-text">${detail || '<span class="muted">추가 설명 없음</span>'}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function editEntry(id){
+    const e = entries.find(x=>x.id===id);
+    if(!e) return;
+    editingId=id;
+    switchTab('add');
+    document.getElementById('entryType').value=e.type;
+    document.getElementById('era').value=e.era;
+    toggleEntryForm();
+
+    if(e.type==='king'){
+      document.getElementById('kingCountry').value=e.country||'';
+      document.getElementById('kingName').value=e.name||'';
+      document.getElementById('achievement').value=e.achievement||'';
+      document.getElementById('kingMemo').value=e.memo||'';
+    }else if(e.type==='culture'){
+      document.getElementById('cultureName').value=e.name||'';
+      document.getElementById('cultureCountry').value=e.country||'';
+      document.getElementById('culturePerson').value=e.person||'';
+      document.getElementById('cultureDesc').value=e.description||'';
+      document.getElementById('cultureMemo').value=e.memo||'';
+    }else if(e.type==='war'){
+      document.getElementById('warName').value=e.name||'';
+      document.getElementById('warCountry').value=e.country||'';
+      document.getElementById('warYear').value=e.year||'';
+      document.getElementById('warFact').value=e.fact||'';
+      document.getElementById('warMemo').value=e.memo||'';
+    }else{
+      document.getElementById('orgCountry').value=e.country||'';
+      document.getElementById('orgName').value=e.name||'';
+      document.getElementById('orgDuty').value=e.duty||'';
+      document.getElementById('orgMemo').value=e.memo||'';
+    }
+
+    document.getElementById('saveBtn').textContent='수정 완료';
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
+  }
+
+  function deleteEntry(id){
+    if(!confirm('이 자료를 삭제할까요?')) return;
+    entries=entries.filter(e=>e.id!==id);
+    saveAll();
+    renderEntries();
+    showToast('삭제했어요.');
+  }
+
+  function quickStart(mode){
+    switchTab('quiz');
+    document.getElementById('quizMode').value=mode;
+    startQuiz();
+  }
+
+  function startQuiz(){
+    const mode=document.getElementById('quizMode').value;
+    const era=document.getElementById('quizEra').value;
+    const count=document.getElementById('quizCount').value;
+    lastQuizSettings={mode,era,count};
+
+    let pool=entries.filter(e=>era==='all'||e.era===era);
+    if(mode==='king') pool=pool.filter(e=>e.type==='king');
+    if(mode==='culture') pool=pool.filter(e=>e.type==='culture');
+    if(mode==='war') pool=pool.filter(e=>e.type==='war');
+    if(mode==='organization') pool=pool.filter(e=>e.type==='organization');
+    if(mode==='wrong') pool=pool.filter(e=>(e.wrongCount||0)>0);
+
+    if(!pool.length){
+      showToast(mode==='wrong'?'아직 오답 자료가 없어요.':'출제할 자료가 없어요.');
+      return;
+    }
+
+    const prepared=shuffle(pool.map(makeQuestion).filter(Boolean));
+    quizQuestions = count==='all' ? prepared : prepared.slice(0,Number(count));
+
+    if(!quizQuestions.length){
+      showToast('객관식 보기를 만들 자료가 부족해요.');
+      return;
+    }
+
+    currentIndex=0;
+    quizQuestions.forEach(q=>{q.selected=null;q.checked=false;q.isCorrect=false});
+    document.getElementById('quizSetup').classList.add('hidden');
+    document.getElementById('quizBox').classList.add('active');
+    document.getElementById('resultBox').classList.remove('active');
+    renderQuestion();
+  }
+
+  function makeQuestion(entry){
+    if(entry.type==='king'){
+      const candidates=[...new Set(entries.filter(e=>e.type==='king' && e.id!==entry.id).map(e=>e.name).filter(Boolean))];
+      const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
+      const choices=shuffle([entry.name,...wrong]);
+
+      while(choices.length<4){
+        const fallback=['태조','광종','성종','공민왕','세종','정조','고종','진흥왕','무령왕','문무왕']
+          .find(x=>!choices.includes(x));
+        if(!fallback) break;
+        choices.push(fallback);
+      }
+
+      return {
+        entryId:entry.id,
+        kind:'왕 재위 시기',
+        era:entry.era,
+        question:`다음 일이 있었던 시기의 왕은 누구일까요?\n“${entry.achievement}”`,
+        answer:entry.name,
+        choices:shuffle(choices),
+        explanation:[entry.country,entry.memo].filter(Boolean).join(' · ')
+      };
+    }
+
+    if(entry.type==='war'){
+      const candidates=[...new Set(entries.filter(e=>e.type==='war' && e.id!==entry.id).map(e=>e.name).filter(Boolean))];
+      const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
+      const choices=shuffle([entry.name,...wrong]);
+      while(choices.length<4){
+        const fallback=['고구려-수 대외 관계','고구려-당 대외 관계','귀주 대첩','몽골 침입','임진왜란','병자호란','청산리 대첩']
+          .find(x=>!choices.includes(x));
+        if(!fallback) break;
+        choices.push(fallback);
+      }
+      return {
+        entryId:entry.id,
+        kind:'대외 관계 사실',
+        era:entry.era,
+        question:`다음 사실과 관련된 대외 관계은 무엇일까요?
+“${entry.fact}”`,
+        answer:entry.name,
+        choices:shuffle(choices),
+        explanation:[entry.country,entry.year,entry.memo].filter(Boolean).join(' · ')
+      };
+    }
+
+    if(entry.type==='organization'){
+      const candidates=[...new Set(entries.filter(e=>e.type==='organization' && e.id!==entry.id).map(e=>e.name).filter(Boolean))];
+      const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
+      const choices=shuffle([entry.name,...wrong]);
+      while(choices.length<4){
+        const fallback=['의정부','6조','삼사','승정원','의금부','도병마사','식목도감','중추원']
+          .find(x=>!choices.includes(x));
+        if(!fallback) break;
+        choices.push(fallback);
+      }
+      return {
+        entryId:entry.id,
+        kind:'정치 조직',
+        era:entry.era,
+        question:`다음 일을 맡은 정치 조직은 무엇일까요?
+“${entry.duty}”`,
+        answer:entry.name,
+        choices:shuffle(choices),
+        explanation:[entry.country,entry.memo].filter(Boolean).join(' · ')
+      };
+    }
+
+    const eras=['선사 시대','고조선과 여러 나라','삼국 시대','남북국 시대','고려','조선 전기','조선 후기','개항기','일제 강점기','현대'];
+    const wrong=shuffle(eras.filter(x=>x!==entry.era)).slice(0,3);
+    return {
+      entryId:entry.id,
+      kind:'문화 시대',
+      era:'문화사',
+      question:`‘${entry.name}’은 어느 시대의 문화일까요?`,
+      answer:entry.era,
+      choices:shuffle([entry.era,...wrong]),
+      explanation:[entry.country,entry.description,entry.memo].filter(Boolean).join(' · ')
+    };
+  }
+
+  function renderQuestion(){
+    const q=quizQuestions[currentIndex];
+    selectedChoice=q.selected;
+
+    document.getElementById('quizCounter').textContent=`${currentIndex+1} / ${quizQuestions.length}`;
+    document.getElementById('quizKind').textContent=q.kind;
+    document.getElementById('quizEraBadge').textContent=q.era;
+    document.getElementById('progressBar').style.width=`${((currentIndex+1)/quizQuestions.length)*100}%`;
+    document.getElementById('question').innerHTML=escapeHtml(q.question).replace(/\n/g,'<br>');
+    document.getElementById('choices').innerHTML=q.choices.map((c,i)=>{
+      let cls='choice';
+      if(q.checked){
+        if(c===q.answer) cls+=' correct';
+        else if(c===q.selected) cls+=' wrong';
+      }else if(c===q.selected) cls+=' selected';
+      return `<button class="${cls}" onclick="selectChoice(${i})">${i+1}. ${escapeHtml(c)}</button>`;
+    }).join('');
+
+    const fb=document.getElementById('feedback');
+    if(q.checked){
+      fb.className=`feedback show ${q.isCorrect?'good':'bad'}`;
+      fb.innerHTML=`<b>${q.isCorrect?'정답이에요!':'틀렸어요.'}</b><br>정답: ${escapeHtml(q.answer)}${q.explanation?`<br>${escapeHtml(q.explanation)}`:''}`;
+    }else{
+      fb.className='feedback';
+      fb.innerHTML='';
+    }
+
+    document.getElementById('checkBtn').disabled=q.checked;
+    document.getElementById('nextBtn').textContent=currentIndex===quizQuestions.length-1?'결과 보기':'다음';
+  }
+
+  function selectChoice(index){
+    const q=quizQuestions[currentIndex];
+    if(q.checked) return;
+    q.selected=q.choices[index];
+    selectedChoice=q.selected;
+    renderQuestion();
+  }
+
+  function checkAnswer(){
+    const q=quizQuestions[currentIndex];
+    if(!q.selected){
+      showToast('보기를 먼저 선택해 주세요.');
+      return;
+    }
+    if(q.checked) return;
+
+    q.checked=true;
+    q.isCorrect=q.selected===q.answer;
+    stats.answered++;
+    if(q.isCorrect) stats.correct++;
+
+    const target=entries.find(e=>e.id===q.entryId);
+    if(target){
+      if(q.isCorrect){
+        target.wrongCount=Math.max(0,(target.wrongCount||0)-1);
+      }else{
+        target.wrongCount=(target.wrongCount||0)+1;
+      }
+    }
+
+    saveAll();
+    renderQuestion();
+  }
+
+  function nextQuestion(){
+    const q=quizQuestions[currentIndex];
+    if(!q.checked && q.selected) checkAnswer();
+
+    if(currentIndex>=quizQuestions.length-1){
+      finishQuiz();
+      return;
+    }
+    currentIndex++;
+    renderQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function prevQuestion(){
+    if(currentIndex===0){
+      showToast('첫 문제예요.');
+      return;
+    }
+    currentIndex--;
+    renderQuestion();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function skipQuestion(){
+    const q=quizQuestions[currentIndex];
+    if(!q.checked){
+      q.checked=true;
+      q.selected='패스';
+      q.isCorrect=false;
+      stats.answered++;
+      const target=entries.find(e=>e.id===q.entryId);
+      if(target) target.wrongCount=(target.wrongCount||0)+1;
+      saveAll();
+    }
+    nextQuestion();
+  }
+
+  function finishQuiz(){
+    const answered=quizQuestions.filter(q=>q.checked).length;
+    const correct=quizQuestions.filter(q=>q.isCorrect).length;
+    const score=Math.round((correct/quizQuestions.length)*100);
+
+    document.getElementById('quizBox').classList.remove('active');
+    document.getElementById('resultBox').classList.add('active');
+    document.getElementById('resultScore').textContent=`${score}점`;
+    document.getElementById('resultText').innerHTML=`총 ${quizQuestions.length}문제 중 <b>${correct}문제 정답</b><br>응답하지 않은 문제 ${quizQuestions.length-answered}개`;
+    updateStats();
+  }
+
+  function restartSame(){
+    if(!lastQuizSettings) return;
+    document.getElementById('quizMode').value=lastQuizSettings.mode;
+    document.getElementById('quizEra').value=lastQuizSettings.era;
+    document.getElementById('quizCount').value=lastQuizSettings.count;
+    startQuiz();
+  }
+
+  function backToSetup(){
+    document.getElementById('quizSetup').classList.remove('hidden');
+    document.getElementById('quizBox').classList.remove('active');
+    document.getElementById('resultBox').classList.remove('active');
+  }
+
+  function exportData(){
+    const payload={version:1,entries,stats,exportedAt:new Date().toISOString()};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`한국사_셀프퀴즈_백업_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(event){
+    const file=event.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(reader.result);
+        const imported=Array.isArray(data)?data:data.entries;
+        if(!Array.isArray(imported)) throw new Error();
+        if(confirm(`자료 ${imported.length}개를 가져올까요?\n기존 자료 뒤에 추가됩니다.`)){
+          const existingIds=new Set(entries.map(e=>e.id));
+          imported.forEach(e=>{
+            let copy={...e};
+            if(existingIds.has(copy.id)) copy.id=Date.now()+Math.floor(Math.random()*100000);
+            entries.push(copy);
+          });
+          saveAll();
+          renderEntries();
+          showToast('자료를 가져왔어요.');
+        }
+      }catch{
+        alert('올바른 백업 파일이 아니에요.');
+      }
+      event.target.value='';
+    };
+    reader.readAsText(file);
+  }
+
+  function resetAll(){
+    if(!confirm('저장한 자료와 학습 기록을 전부 삭제할까요?')) return;
+    if(!confirm('정말 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+    entries=[];
+    stats={correct:0,answered:0};
+    saveAll();
+    renderEntries();
+    showToast('전체 자료를 삭제했어요.');
+  }
+
+  function updateStats(){
+    document.getElementById('statTotal').textContent=entries.length;
+    document.getElementById('statWrong').textContent=entries.filter(e=>(e.wrongCount||0)>0).length;
+    document.getElementById('statRate').textContent=stats.answered?`${Math.round(stats.correct/stats.answered*100)}%`:'0%';
+  }
+
+  function shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  function escapeHtml(value){
+    return String(value??'')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  toggleEntryForm();
+  renderEntries();
+  updateStats();
+</script>
+</body>
+</html>
