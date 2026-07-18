@@ -308,7 +308,7 @@
 <div class="app">
   <header>
     <h1>한국사 셀프 퀴즈</h1>
-    <div class="subtitle">왕의 업적과 문화사를 직접 입력하고, 내가 만든 문제로 반복 학습해요.</div>
+    <div class="subtitle">왕의 재위 시기에 있었던 일과 문화사를 직접 입력하고, 내가 만든 문제로 반복 학습해요.</div>
     <div class="top-stats">
       <div class="stat"><b id="statTotal">0</b><span>저장 자료</span></div>
       <div class="stat"><b id="statWrong">0</b><span>오답 자료</span></div>
@@ -329,8 +329,8 @@
       <div class="quiz-setup">
         <div class="option-grid">
           <button class="mode-card" onclick="quickStart('king')">
-            <b>👑 왕 업적 퀴즈</b>
-            <span class="muted">업적을 보고 왕 맞히기</span>
+            <b>👑 왕 재위 시기 퀴즈</b>
+            <span class="muted">재위 시기의 일을 보고 왕 맞히기</span>
           </button>
           <button class="mode-card" onclick="quickStart('culture')">
             <b>🏺 문화 시대 퀴즈</b>
@@ -338,7 +338,7 @@
           </button>
           <button class="mode-card" onclick="quickStart('all')">
             <b>🎲 전체 랜덤</b>
-            <span class="muted">왕·문화 문제 섞어 풀기</span>
+            <span class="muted">왕 재위 시기·문화 문제 섞어 풀기</span>
           </button>
           <button class="mode-card" onclick="quickStart('wrong')">
             <b>📝 오답 다시 풀기</b>
@@ -351,7 +351,7 @@
     <div class="card">
       <h2>사용 방법</h2>
       <div class="muted">
-        1. 입력 탭에서 왕 업적 또는 문화 자료를 저장해요.<br>
+        1. 입력 탭에서 왕의 재위 시기에 있었던 일 또는 문화 자료를 저장해요.<br>
         2. 퀴즈 탭에서 문제 유형과 문제 수를 골라요.<br>
         3. 틀린 자료는 자동으로 오답 목록에 쌓여요.<br>
         4. 자료는 이 기기의 브라우저에 저장돼요.
@@ -364,7 +364,7 @@
       <h2>자료 입력</h2>
       <label>자료 유형</label>
       <select id="entryType" onchange="toggleEntryForm()">
-        <option value="king">왕 업적</option>
+        <option value="king">왕 재위 시기</option>
         <option value="culture">문화 파트</option>
       </select>
 
@@ -395,7 +395,7 @@
             <input id="kingName" placeholder="예: 광종" />
           </div>
         </div>
-        <label>업적</label>
+        <label>재위 시기에 있었던 일</label>
         <textarea id="achievement" placeholder="예: 노비안검법을 실시하였다."></textarea>
         <label>해설·암기 메모</label>
         <textarea id="kingMemo" placeholder="예: 왕권 강화와 호족 세력 약화 목적"></textarea>
@@ -431,10 +431,10 @@
       <div class="filterbar">
         <select id="listTypeFilter" onchange="renderEntries()">
           <option value="all">전체 유형</option>
-          <option value="king">왕 업적</option>
+          <option value="king">왕 재위 시기</option>
           <option value="culture">문화 파트</option>
         </select>
-        <input id="searchText" placeholder="왕·업적·문화 검색" oninput="renderEntries()" />
+        <input id="searchText" placeholder="왕·재위 시기 사건·문화 검색" oninput="renderEntries()" />
       </div>
       <div id="entryList"></div>
     </div>
@@ -458,7 +458,7 @@
       <label>문제 유형</label>
       <select id="quizMode">
         <option value="all">전체 랜덤</option>
-        <option value="king">왕 업적</option>
+        <option value="king">왕 재위 시기</option>
         <option value="culture">문화 시대</option>
         <option value="wrong">오답 다시 풀기</option>
       </select>
@@ -491,7 +491,7 @@
     <div id="quizBox" class="card quiz-box">
       <div class="quiz-top">
         <b id="quizCounter">1 / 10</b>
-        <span class="badge" id="quizKind">왕 업적</span>
+        <span class="badge" id="quizKind">왕 재위 시기</span>
       </div>
       <div class="progress"><div id="progressBar"></div></div>
       <div id="quizEraBadge" class="badge"></div>
@@ -585,7 +585,7 @@
       const memo = document.getElementById('kingMemo').value.trim();
 
       if(!name || !achievement){
-        showToast('왕 이름과 업적을 입력해 주세요.');
+        showToast('왕 이름과 재위 시기에 있었던 일을 입력해 주세요.');
         return;
       }
 
@@ -666,7 +666,7 @@
       <div class="entry">
         <div class="entry-head">
           <div>
-            <span class="badge">${e.type==='king'?'왕 업적':'문화'}</span>
+            <span class="badge">${e.type==='king'?'왕 재위 시기':'문화'}</span>
             <span class="badge">${escapeHtml(e.era)}</span>
             ${e.wrongCount ? `<span class="badge">오답 ${e.wrongCount}회</span>` : ''}
             <div class="entry-title">${title}</div>
@@ -768,9 +768,9 @@
 
       return {
         entryId:entry.id,
-        kind:'왕 업적',
+        kind:'왕 재위 시기',
         era:entry.era,
-        question:`다음 업적을 이룬 왕은 누구일까요?\n“${entry.achievement}”`,
+        question:`다음 일이 있었던 시기의 왕은 누구일까요?\n“${entry.achievement}”`,
         answer:entry.name,
         choices:shuffle(choices),
         explanation:[entry.country,entry.memo].filter(Boolean).join(' · ')
