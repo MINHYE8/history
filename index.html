@@ -1,3 +1,5 @@
+
+<!-- v2 schema: 대외 관계 카테고리(전쟁/외교/조약/대외정책/교류) 추가 예정. 기존 localStorage 유지 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -337,8 +339,8 @@
             <span class="muted">문화유산의 시대 맞히기</span>
           </button>
           <button class="mode-card" onclick="quickStart('war')">
-            <b>⚔️ 전쟁 사실 퀴즈</b>
-            <span class="muted">사실을 보고 전쟁 맞히기</span>
+            <b>⚔️ 대외 관계 사실 퀴즈</b>
+            <span class="muted">사실을 보고 대외 관계 맞히기</span>
           </button>
           <button class="mode-card" onclick="quickStart('organization')">
             <b>🏛️ 정치 조직 퀴즈</b>
@@ -346,7 +348,7 @@
           </button>
           <button class="mode-card" onclick="quickStart('all')">
             <b>🎲 전체 랜덤</b>
-            <span class="muted">왕·문화·전쟁·정치 조직 섞어 풀기</span>
+            <span class="muted">왕·문화·대외 관계·정치 조직 섞어 풀기</span>
           </button>
           <button class="mode-card" onclick="quickStart('wrong')">
             <b>📝 오답 다시 풀기</b>
@@ -359,7 +361,7 @@
     <div class="card">
       <h2>사용 방법</h2>
       <div class="muted">
-        1. 입력 탭에서 왕·문화·전쟁·정치 조직 자료를 저장해요.<br>
+        1. 입력 탭에서 왕·문화·대외 관계·정치 조직 자료를 저장해요.<br>
         2. 퀴즈 탭에서 문제 유형과 문제 수를 골라요.<br>
         3. 틀린 자료는 자동으로 오답 목록에 쌓여요.<br>
         4. 자료는 이 기기의 브라우저에 저장돼요.
@@ -374,7 +376,7 @@
       <select id="entryType" onchange="toggleEntryForm()">
         <option value="king">왕 재위 시기</option>
         <option value="culture">문화 파트</option>
-        <option value="war">전쟁</option>
+        <option value="war">대외 관계</option>
         <option value="organization">정치 조직</option>
       </select>
 
@@ -431,7 +433,7 @@
       </div>
 
       <div id="warFields" class="hidden">
-        <label>전쟁 이름</label>
+        <label>대외 관계 이름</label>
         <input id="warName" placeholder="예: 임진왜란" />
         <div class="row">
           <div>
@@ -443,7 +445,7 @@
             <input id="warYear" placeholder="예: 1592년" />
           </div>
         </div>
-        <label>전쟁에서 있었던 사실</label>
+        <label>대외 관계에서 있었던 사실</label>
         <textarea id="warFact" placeholder="예: 이순신이 한산도 대첩에서 승리하였다."></textarea>
         <label>해설·암기 메모</label>
         <textarea id="warMemo" placeholder="예: 선조 재위 시기, 일본의 침략"></textarea>
@@ -479,10 +481,10 @@
           <option value="all">전체 유형</option>
           <option value="king">왕 재위 시기</option>
           <option value="culture">문화 파트</option>
-          <option value="war">전쟁</option>
+          <option value="war">대외 관계</option>
           <option value="organization">정치 조직</option>
         </select>
-        <input id="searchText" placeholder="왕·문화·전쟁·정치 조직 검색" oninput="renderEntries()" />
+        <input id="searchText" placeholder="왕·문화·대외 관계·정치 조직 검색" oninput="renderEntries()" />
       </div>
       <div id="entryList"></div>
     </div>
@@ -508,7 +510,7 @@
         <option value="all">전체 랜덤</option>
         <option value="king">왕 재위 시기</option>
         <option value="culture">문화 시대</option>
-        <option value="war">전쟁 사실</option>
+        <option value="war">대외 관계 사실</option>
         <option value="organization">정치 조직</option>
         <option value="wrong">오답 다시 풀기</option>
       </select>
@@ -651,7 +653,7 @@
       const year = document.getElementById('warYear').value.trim();
       const fact = document.getElementById('warFact').value.trim();
       const memo = document.getElementById('warMemo').value.trim();
-      if(!name || !fact){ showToast('전쟁 이름과 전쟁에서 있었던 사실을 입력해 주세요.'); return; }
+      if(!name || !fact){ showToast('대외 관계 이름과 대외 관계에서 있었던 사실을 입력해 주세요.'); return; }
       item = {id:editingId || Date.now(), type, era, name, country, year, fact, memo, wrongCount:0};
     }else{
       const country = document.getElementById('orgCountry').value.trim();
@@ -730,7 +732,7 @@
       <div class="entry">
         <div class="entry-head">
           <div>
-            <span class="badge">${e.type==='king'?'왕 재위 시기':e.type==='culture'?'문화':e.type==='war'?'전쟁':'정치 조직'}</span>
+            <span class="badge">${e.type==='king'?'왕 재위 시기':e.type==='culture'?'문화':e.type==='war'?'대외 관계':'정치 조직'}</span>
             <span class="badge">${escapeHtml(e.era)}</span>
             ${e.wrongCount ? `<span class="badge">오답 ${e.wrongCount}회</span>` : ''}
             <div class="entry-title">${title}</div>
@@ -859,16 +861,16 @@
       const wrong=shuffle(candidates.filter(x=>x!==entry.name)).slice(0,3);
       const choices=shuffle([entry.name,...wrong]);
       while(choices.length<4){
-        const fallback=['고구려-수 전쟁','고구려-당 전쟁','귀주 대첩','몽골 침입','임진왜란','병자호란','청산리 대첩']
+        const fallback=['고구려-수 대외 관계','고구려-당 대외 관계','귀주 대첩','몽골 침입','임진왜란','병자호란','청산리 대첩']
           .find(x=>!choices.includes(x));
         if(!fallback) break;
         choices.push(fallback);
       }
       return {
         entryId:entry.id,
-        kind:'전쟁 사실',
+        kind:'대외 관계 사실',
         era:entry.era,
-        question:`다음 사실과 관련된 전쟁은 무엇일까요?
+        question:`다음 사실과 관련된 대외 관계은 무엇일까요?
 “${entry.fact}”`,
         answer:entry.name,
         choices:shuffle(choices),
